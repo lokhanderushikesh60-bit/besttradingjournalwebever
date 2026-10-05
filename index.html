@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>TradeForge — Trading Journal</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="authScreen" class="auth-shell">
+  <div class="auth-card">
+    <div class="brand-mark">TF</div>
+    <p class="eyebrow">TRADEFORGE</p>
+    <h1>Build better trading habits.</h1>
+    <p class="muted">Your journal, psychology, mistakes and performance — connected to your account and designed for improvement.</p>
+    <div class="auth-tabs"><button class="tab active" data-mode="login">Log in</button><button class="tab" data-mode="signup">Create account</button></div>
+    <form id="authForm">
+      <label>Email<input id="email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+      <label>Password<input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="Minimum 6 characters"></label>
+      <button class="primary wide" id="authBtn">Log in</button>
+      <button type="button" class="link-btn" id="resetBtn">Forgot password?</button>
+      <div id="authMsg" class="message"></div>
+    </form>
+    <div class="security-note">🔒 Your journal is separated by account and protected by database access rules.</div>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="side-brand"><span class="brand-mark small">TF</span><div><b>TradeForge</b><small>Trading OS</small></div></div>
+    <nav>
+      <button class="nav active" data-page="dashboard">◈ <span>Dashboard</span></button>
+      <button class="nav" data-page="journal">▤ <span>Journal</span></button>
+      <button class="nav" data-page="newtrade">＋ <span>New trade</span></button>
+      <button class="nav" data-page="psychology">◉ <span>Psychology</span></button>
+      <button class="nav" data-page="mistakes">⚠ <span>Mistakes</span></button>
+      <button class="nav" data-page="analytics">⌁ <span>Analytics</span></button>
+      <button class="nav" data-page="review">✓ <span>Review</span></button>
+    </nav>
+    <div class="side-bottom">
+      <button class="nav" data-page="settings">⚙ <span>Settings</span></button>
+      <button id="logoutBtn" class="nav danger">↪ <span>Log out</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><span class="eyebrow" id="pageKicker">OVERVIEW</span><h2 id="pageTitle">Dashboard</h2></div>
+      <div class="top-actions"><span id="saveStatus" class="save-status">● Cloud sync ready</span><button class="avatar" id="accountBtn">A</button></div>
+    </header>
+    <section id="content"></section>
+  </main>
+</div>
+
+<template id="dashboardTpl">
+<div class="hero-grid">
+  <div class="hero-card"><span class="eyebrow">TRADING DEVELOPMENT</span><h3 id="coachHeadline">Turn every trade into feedback.</h3><p id="coachText">Add trades with honest psychology data. The journal will connect emotions, mistakes, sessions and results.</p><button class="primary" data-page-action="newtrade">＋ Log a trade</button></div>
+  <div class="score-card"><span>Discipline score</span><strong id="dashDiscipline">—</strong><small id="dashDisciplineSub">Based on rule-following</small></div>
+</div>
+<div class="stat-grid">
+  <div class="stat"><span>Net P&L</span><b id="dPnl">₹0</b></div><div class="stat"><span>Win rate</span><b id="dWin">0%</b></div><div class="stat"><span>Avg R</span><b id="dR">0.00R</b></div><div class="stat"><span>Trades</span><b id="dTrades">0</b></div><div class="stat"><span>Psychology avg</span><b id="dPsych">—</b></div><div class="stat"><span>Greed avg</span><b id="dGreed">—</b></div>
+</div>
+<div class="two-col">
+  <div class="panel"><div class="panel-head"><h3>Psychology snapshot</h3><button class="text-btn" data-page-action="psychology">View all</button></div><div id="psychBars"></div></div>
+  <div class="panel"><div class="panel-head"><h3>Most expensive mistakes</h3><button class="text-btn" data-page-action="mistakes">Analyze</button></div><div id="mistakeList"></div></div>
+</div>
+<div class="panel"><div class="panel-head"><h3>Session performance</h3><span class="muted">Win rate + average R</span></div><div id="sessionTable"></div></div>
+</template>
+
+<template id="tradeTpl">
+<div class="form-wrap">
+<form id="tradeForm" class="trade-form">
+<div class="form-section"><div class="section-title"><span>01</span><div><h3>Trade basics</h3><p>Record the facts before judging the result.</p></div></div>
+<div class="form-grid">
+<label>Date/time<input id="tDate" type="datetime-local" required></label><label>Symbol<input id="tSymbol" required placeholder="BTCUSDT / NIFTY / EURUSD"></label>
+<label>Market<input id="tMarket" placeholder="Crypto, Forex, Futures, Stocks"></label><label>Direction<select id="tDirection"><option>Long</option><option>Short</option></select></label>
+<label>Session<select id="tSession"><option>Asia</option><option>London</option><option>New York</option><option>Overlap</option><option>Indian</option><option>Other</option></select></label>
+<label>Trading period quality<select id="tPeriod"><option value="right">Right period</option><option value="wrong">Wrong period</option></select></label>
+<label>Setup / strategy<input id="tSetup" placeholder="Breakout, liquidity sweep, pullback..."></label><label>Market condition<select id="tCondition"><option>Trending</option><option>Ranging</option><option>Choppy</option><option>Volatile</option><option>News-driven</option></select></label>
+</div></div>
+
+<div class="form-section"><div class="section-title"><span>02</span><div><h3>Risk & result</h3><p>Judge execution separately from whether the trade won.</p></div></div>
+<div class="form-grid"><label>Entry<input id="tEntry" type="number" step="any"></label><label>Stop loss<input id="tSL" type="number" step="any"></label><label>Take profit<input id="tTP" type="number" step="any"></label><label>Exit<input id="tExit" type="number" step="any"></label><label>Risk amount<input id="tRisk" type="number" step="any" placeholder="100"></label><label>P&L<input id="tPnl" type="number" step="any" placeholder="250"></label><label>R multiple<input id="tR" type="number" step="any" placeholder="2"></label><label>Result<select id="tResult"><option>Win</option><option>Loss</option><option>Breakeven</option></select></label></div></div>
+
+<div class="form-section"><div class="section-title"><span>03</span><div><h3>Live psychology</h3><p>Do not hide uncomfortable emotions — this is where the journal becomes useful.</p></div></div>
+<div class="slider-grid">
+<label>Greed <output id="greedOut">3</output><input id="tGreed" type="range" min="1" max="10" value="3"></label>
+<label>Fear <output id="fearOut">3</output><input id="tFear" type="range" min="1" max="10" value="3"></label>
+<label>FOMO <output id="fomoOut">2</output><input id="tFomo" type="range" min="1" max="10" value="2"></label>
+<label>Revenge urge <output id="revengeOut">1</output><input id="tRevenge" type="range" min="1" max="10" value="1"></label>
+<label>Confidence <output id="confOut">7</output><input id="tConfidence" type="range" min="1" max="10" value="7"></label>
+<label>Discipline <output id="discOut">8</output><input id="tDiscipline" type="range" min="1" max="10" value="8"></label>
+</div>
+<div class="chip-group"><span class="group-label">Emotions felt</span><div id="emotionChips" class="chips"></div></div>
+<div class="chip-group"><span class="group-label">Mistakes / behaviors</span><div id="mistakeChips" class="chips"></div></div>
+</div>
+
+<div class="form-section"><div class="section-title"><span>04</span><div><h3>Execution review</h3><p>Was the trade good even if the outcome was bad?</p></div></div>
+<div class="check-grid"><label class="check"><input id="cPlan" type="checkbox"> Followed trading plan</label><label class="check"><input id="cRisk" type="checkbox"> Correct risk</label><label class="check"><input id="cEntry" type="checkbox"> Good entry</label><label class="check"><input id="cExit" type="checkbox"> Good exit</label><label class="check"><input id="cSession" type="checkbox"> Correct session</label><label class="check"><input id="cPatience" type="checkbox"> Waited for confirmation</label></div>
+<label>What happened?<textarea id="tNotes" rows="4" placeholder="What did you see, think and do?"></textarea></label>
+<label>Lesson / next action<textarea id="tLesson" rows="3" placeholder="One specific behavior to repeat or remove."></textarea></label>
+</div>
+<div class="form-actions"><button type="button" class="secondary" data-page-action="dashboard">Cancel</button><button class="primary" id="saveTrade">Save trade & update analytics</button></div>
+<div id="tradeMsg" class="message"></div>
+</form>
+</div>
+</template>
+
+<template id="journalTpl"><div class="panel"><div class="panel-head"><h3>Trade journal</h3><button class="primary small" data-page-action="newtrade">＋ New trade</button></div><div class="filters"><input id="searchTrades" placeholder="Search symbol, setup, mistake..."><select id="filterResult"><option value="">All results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><div id="journalTable"></div></div></template>
+
+<template id="psychTpl"><div class="stat-grid"><div class="stat"><span>Overall psychology</span><b id="pOverall">—</b></div><div class="stat"><span>Greed average</span><b id="pGreed">—</b></div><div class="stat"><span>Fear average</span><b id="pFear">—</b></div><div class="stat"><span>FOMO average</span><b id="pFomo">—</b></div><div class="stat"><span>Revenge average</span><b id="pRevenge">—</b></div><div class="stat"><span>Discipline average</span><b id="pDisc">—</b></div></div><div class="two-col"><div class="panel"><h3>Emotion → performance</h3><div id="emotionAnalysis"></div></div><div class="panel"><h3>Psychology trend</h3><div id="psychTrend"></div></div></div><div class="panel"><h3>Psychology warnings</h3><div id="psychWarnings"></div></div></template>
+
+<template id="mistakeTpl"><div class="panel"><div class="panel-head"><h3>Mistake intelligence</h3><span class="muted">Cost + frequency, not just count</span></div><div id="mistakeAnalysis"></div></div><div class="panel"><h3>Rule-following vs result</h3><div id="ruleAnalysis"></div></div></template>
+
+<template id="analyticsTpl"><div class="panel"><div class="panel-head"><h3>Performance analytics</h3><span class="muted">Calculated from every saved trade</span></div><div id="analyticsGrid" class="analytics-grid"></div></div><div class="two-col"><div class="panel"><h3>Strategy breakdown</h3><div id="strategyAnalysis"></div></div><div class="panel"><h3>Time/session breakdown</h3><div id="timeAnalysis"></div></div></div></template>
+
+<template id="reviewTpl"><div class="panel"><h3>Review center</h3><p class="muted">Your journal should create decisions, not just statistics.</p><div id="reviewContent"></div></div></template>
+<template id="settingsTpl"><div class="panel"><h3>Account & data</h3><p id="accountEmail" class="muted"></p><div class="settings-actions"><button id="exportBtn" class="secondary">Export all journal data</button><button id="backupBtn" class="secondary">Create backup JSON</button></div><div class="security-note">Cloud data is account-linked. Deleting a trade is intentionally separate from logging out. Configure Supabase RLS before using this publicly.</div></div></template>
+
+<script src="config.js"></script><script src="app.js"></script>
+</body></html>
