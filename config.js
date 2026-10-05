@@ -1,6 +1,6 @@
-// Supabase configuration. Replace these two values with your project values.
-// Never put a Supabase service_role key in this file.
+// Supabase configuration.
+// Never put a Supabase secret/service_role key in this file.
 window.TRADEFORGE_CONFIG = {
-https://dkejuztcetuqobfuxhcq.supabase.co/rest/v1/
-sb_publishable_KG9bfrCLWK7xirPNfoIQug_cM0ClWDH
+  SUPABASE_URL: "https://dkejuztcetuqobfuxhcq.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_KG9bfrCLWK7xirPNfoIQug_cM0ClWDH"
 };
