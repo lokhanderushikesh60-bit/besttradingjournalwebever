@@ -26,45 +26,45 @@ function renderPsych(){
     const greed=Number(x.greed)||0,fear=Number(x.fear)||0,fomo=Number(x.fomo)||0,revenge=Number(x.revenge)||0,confidence=Number(x.confidence)||0,discipline=Number(x.discipline)||0;
     return (confidence+discipline+(11-greed)+(11-fear)+(11-fomo)+(11-revenge))/6;
   })):0;
-  $(\"pOverall\").textContent=n?fmt(score):\"—\";
-  $(\"pGreed\").textContent=n?fmt(mean(\"greed\"))+\" / 10\":\"—\";
-  $(\"pFear\").textContent=n?fmt(mean(\"fear\"))+\" / 10\":\"—\";
-  $(\"pFomo\").textContent=n?fmt(mean(\"fomo\"))+\" / 10\":\"—\";
-  $(\"pRevenge\").textContent=n?fmt(mean(\"revenge\"))+\" / 10\":\"—\";
-  $(\"pDisc\").textContent=n?fmt(mean(\"discipline\"))+\" / 10\":\"—\";
+  $("pOverall").textContent=n?fmt(score):"—";
+  $("pGreed").textContent=n?fmt(mean("greed"))+" / 10":"—";
+  $("pFear").textContent=n?fmt(mean("fear"))+" / 10":"—";
+  $("pFomo").textContent=n?fmt(mean("fomo"))+" / 10":"—";
+  $("pRevenge").textContent=n?fmt(mean("revenge"))+" / 10":"—";
+  $("pDisc").textContent=n?fmt(mean("discipline"))+" / 10":"—";
 
-  renderBars(\"psychTrend\",[
-    {n:\"Confidence average\",v:mean(\"confidence\")},
-    {n:\"Discipline average\",v:mean(\"discipline\")},
-    {n:\"Greed average\",v:mean(\"greed\")},
-    {n:\"Fear average\",v:mean(\"fear\")},
-    {n:\"FOMO average\",v:mean(\"fomo\")},
-    {n:\"Revenge average\",v:mean(\"revenge\")}
+  renderBars("psychTrend",[
+    {n:"Confidence average",v:mean("confidence")},
+    {n:"Discipline average",v:mean("discipline")},
+    {n:"Greed average",v:mean("greed")},
+    {n:"Fear average",v:mean("fear")},
+    {n:"FOMO average",v:mean("fomo")},
+    {n:"Revenge average",v:mean("revenge")}
   ]);
 
   const em={};
   t.forEach(x=>(Array.isArray(x.emotions)?x.emotions:[]).forEach(e=>{em[e]??=[];em[e].push(x)}));
-  $(\"emotionAnalysis\").innerHTML=Object.entries(em).sort((a,b)=>b[1].length-a[1].length).map(([e,a])=>
-    '<div class="analysis-card"><b>'+esc(e)+'</b><span>'+a.length+' trades · '+Math.round(a.filter(x=>x.result===\"Win\").length/a.length*100)+'% win · '+fmt(avg(a.map(x=>Number(x.r_multiple)||0)))+'R avg · ₹'+fmt(avg(a.map(x=>Number(x.pnl)||0)))+' avg P&L</span></div>'
-  ).join(\")||'<p class="muted">No emotions have been tagged yet.</p>';
+  $("emotionAnalysis").innerHTML=Object.entries(em).sort((a,b)=>b[1].length-a[1].length).map(([e,a])=>
+    '<div class="analysis-card"><b>'+esc(e)+'</b><span>'+a.length+' trades · '+Math.round(a.filter(x=>x.result==="Win").length/a.length*100)+'% win · '+fmt(avg(a.map(x=>Number(x.r_multiple)||0)))+'R avg · ₹'+fmt(avg(a.map(x=>Number(x.pnl)||0)))+' avg P&L</span></div>'
+  ).join(")||'<p class="muted">No emotions have been tagged yet.</p>';
 
   const groups=[
-    [\"Greed\",\"greed\"],[\"Fear\",\"fear\"],[\"FOMO\",\"fomo\"],[\"Revenge urge\",\"revenge\"],[\"Confidence\",\"confidence\"],[\"Discipline\",\"discipline\"]
+    ["Greed","greed"],["Fear","fear"],["FOMO","fomo"],["Revenge urge","revenge"],["Confidence","confidence"],["Discipline","discipline"]
   ];
-  $(\"psychWarnings\").innerHTML=n?'<div class="analysis-card"><b>Average psychology from all saved trades</b><span>'+n+' trade'+(n===1?'':'s')+' included · Overall score '+fmt(score)+'/10</span></div>'+
-    groups.map(([label,key])=>'<div class="analysis-card"><b>'+label+'</b><span>Average: '+fmt(mean(key))+'/10 · '+(mean(key)>=7?'High':mean(key)>=4?'Moderate':'Low')+'</span></div>').join(\"):'<p class="muted">Save at least one trade to generate psychology averages.</p>';
+  $("psychWarnings").innerHTML=n?'<div class="analysis-card"><b>Average psychology from all saved trades</b><span>'+n+' trade'+(n===1?'':'s')+' included · Overall score '+fmt(score)+'/10</span></div>'+
+    groups.map(([label,key])=>'<div class="analysis-card"><b>'+label+'</b><span>Average: '+fmt(mean(key))+'/10 · '+(mean(key)>=7?'High':mean(key)>=4?'Moderate':'Low')+'</span></div>').join("):'<p class="muted">Save at least one trade to generate psychology averages.</p>';
 
   const byResult={};
-  t.forEach(x=>{const r=x.result||\"Unknown\";byResult[r]??=[];byResult[r].push(x)});
+  t.forEach(x=>{const r=x.result||"Unknown";byResult[r]??=[];byResult[r].push(x)});
   const resultHtml=Object.entries(byResult).map(([r,a])=>
     '<div class="analysis-card"><b>'+esc(r)+'</b><span>'+a.length+' trades · Avg greed '+fmt(avg(a.map(x=>Number(x.greed)||0)))+'/10 · Avg fear '+fmt(avg(a.map(x=>Number(x.fear)||0)))+'/10 · Avg discipline '+fmt(avg(a.map(x=>Number(x.discipline)||0)))+'/10 · Avg P&L ₹'+fmt(avg(a.map(x=>Number(x.pnl)||0)))+'</span></div>'
   ).join("");
   const session={};
-  t.forEach(x=>{const s=x.session||\"Unspecified\";session[s]??=[];session[s].push(x)});
+  t.forEach(x=>{const s=x.session||"Unspecified";session[s]??=[];session[s].push(x)});
   const sessionHtml=Object.entries(session).map(([s,a])=>
     '<div class="analysis-card"><b>'+esc(s)+'</b><span>'+a.length+' trades · Avg greed '+fmt(avg(a.map(x=>Number(x.greed)||0)))+'/10 · Avg fear '+fmt(avg(a.map(x=>Number(x.fear)||0)))+'/10 · Avg FOMO '+fmt(avg(a.map(x=>Number(x.fomo)||0)))+'/10 · Avg discipline '+fmt(avg(a.map(x=>Number(x.discipline)||0)))+'/10</span></div>'
   ).join("");
-  const existing=$(\"psychWarnings\");
+  const existing=$("psychWarnings");
   existing.innerHTML+=(n?'<div class="analysis-card"><b>Psychology by result</b><span>'+resultHtml+'</span></div><div class="analysis-card"><b>Psychology by trading session</b><span>'+sessionHtml+'</span></div>':"");
 }
 function renderMistakes(){const map={};trades.forEach(t=>(t.mistakes||[]).forEach(m=>{map[m]??={trades:[],pnl:0};map[m].trades.push(t);map[m].pnl+=+t.pnl||0}));const a=Object.entries(map).sort((x,y)=>Math.abs(y[1].pnl)-Math.abs(x[1].pnl));$("mistakeAnalysis").innerHTML=a.length?a.map(([m,v])=>'<div class="analysis-card"><b>'+esc(m)+'</b><span>'+v.trades.length+' times · ₹'+fmt(v.pnl)+' total P&L · '+Math.round(v.trades.filter(x=>x.result==="Win").length/v.trades.length*100)+'% win rate · avg '+fmt(avg(v.trades.map(x=>x.r_multiple)))+'R</span></div>').join(""):'<p class="muted">No mistakes tagged. Honest tagging is essential.</p>';const rule=trades.filter(t=>t.followed_plan),bad=trades.filter(t=>!t.followed_plan);$("ruleAnalysis").innerHTML='<div class="analysis-card"><b>Followed plan</b><span>'+rule.length+' trades · '+(rule.length?Math.round(rule.filter(x=>x.result==="Win").length/rule.length*100):0)+'% win · '+fmt(avg(rule.map(x=>x.r_multiple)))+'R avg</span></div><div class="analysis-card"><b>Did not follow plan</b><span>'+bad.length+' trades · '+(bad.length?Math.round(bad.filter(x=>x.result==="Win").length/bad.length*100):0)+'% win · '+fmt(avg(bad.map(x=>x.r_multiple)))+'R avg</span></div>'}
